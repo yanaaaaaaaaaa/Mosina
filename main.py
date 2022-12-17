@@ -24,7 +24,7 @@ currency_to_rub = {'AZN': 35.68,
 class UsersInput:
     def __init__(self):
         self.file_name = input('Введите название файла: ')
-        self.profession_name = input('Введите название профессии: ')
+        self.profession_name = input('Введите название работы: ')
 
         self.file_name = self.check_file_name(self.file_name)
         self.profession_name = self.check_profession_name(self.profession_name)
