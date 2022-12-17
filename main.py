@@ -22,7 +22,14 @@ currency_to_rub = {'AZN': 35.68,
 
 
 class UsersInput:
+    """
+    Класс для ввода данных. Также определяет правльно ли ввели название файла и профессии.
+    """
     def __init__(self):
+        """
+        Инициализирует объект UserInput
+        :rtype: object
+        """
         self.file_name = input('Введите название файла: ')
         self.profession_name = input('Введите название работы: ')
 
@@ -31,6 +38,14 @@ class UsersInput:
 
     @staticmethod
     def check_file_name(file_name):
+        """
+        Проверка на правильный ввод имени файла
+        :type file_name: object
+        :rtype: object
+
+        Returns:
+            object: Имя файла
+        """
         if file_name == '' or '.' not in file_name:
             print('Некорректное название файла')
             sys.exit()
@@ -38,6 +53,14 @@ class UsersInput:
 
     @staticmethod
     def check_profession_name(profession_name):
+        """
+        Проверка на правильный ввод названия профессии
+        :type profession_name: object
+        :rtype: object
+
+        Returns:
+            object: Название профессии
+        """
         if profession_name == '':
             print('Некорректное название профессии')
             sys.exit()
@@ -45,7 +68,14 @@ class UsersInput:
 
 
 class DataSet:
+    """
+    Класс для определения наличия данных в исходном файле.
+    """
     def __init__(self, file_name):
+        """
+        Считывает файл и проверяет есть ли данные.
+        :rtype: object
+        """
         self.reader = [row for row in csv.reader(open(file_name, encoding='utf_8_sig'))]
         if len(self.reader) == 0:
             print('Пустой файл')
@@ -68,12 +98,22 @@ class Vacancy:
     salary: str
 
     def __init__(self, vacancy):
+        """
 
+        :type vacancy: object
+        :rtype: object
+        """
         for key, value in vacancy.items():
             self.__setattr__(key, self.formatter(key, value))
 
     @staticmethod
     def formatter(key, value):
+        """
+        Выполняет конвертацию
+        :type value: object
+        :type key: object
+        :rtype: object
+        """
         if key in ['salary_from', 'salary_to']:
             return float(value)
         if key == 'published_at':
@@ -83,6 +123,16 @@ class Vacancy:
 
 class Salary:
     def __init__(self, salary_from, salary_to, salary_currency):
+        """
+        Инициализирует объкт Salary, выполняет конвертацию для целочисленных полей
+        
+        Args:
+            salary_from: int or float - нижняя граница оклада
+            salary_to: int or float - верхняя границв оклада
+            salary_currency: str - валюта оклада
+
+        :rtype: object
+        """
         self.salary_from = salary_from
         self.salary_to = salary_to
         self.salary_currency = salary_currency
@@ -90,15 +140,29 @@ class Salary:
 
 class SalaryDict:
     def __init__(self):
+        """
+        Создание двух словарей
+        :rtype: object
+        """
         self.salary_dict = {}
         self.__aver_salary_dict = {}
 
     def add_salary(self, key, salary):
+        """
+        Проверка на существования значения в словаре salary_dict
+        :rtype: object
+        """
         if self.salary_dict.get(key) is None:
             self.salary_dict[key] = []
         return self.salary_dict[key].append(salary)
 
     def get_aver_salary(self):
+        """
+        Returns:
+            dict: __aver_salary_dict
+            
+        :rtype: object
+        """
         for key, value in self.salary_dict.items():
             self.__aver_salary_dict[key] = int(mean(value))
         return self.__aver_salary_dict
@@ -106,12 +170,22 @@ class SalaryDict:
 
 class CountDict:
     def __init__(self):
+        """
+        Создание дополинительных переменных, словарей и массивов
+        :rtype: object
+        """
         self.length = 0
         self.count_dict = {}
         self.big_cities = []
         self.top_proportion_dict = {}
 
     def add(self, key):
+        """
+
+        
+        :type key: object
+        :rtype: object
+        """
         if self.count_dict.get(key) is None:
             self.count_dict[key] = 0
         self.count_dict[key] += 1
@@ -119,6 +193,10 @@ class CountDict:
         return
 
     def get_proportion(self):
+        """
+
+        :rtype: object
+        """
         proportion_dict = {}
         for key, value in self.count_dict.items():
             proportion = value / self.length
@@ -140,6 +218,11 @@ class ParseData:
         self.vacancy_rate_by_city = CountDict()
 
     def get_data(self, vacancies, prof):
+        """
+        Получение дат
+
+        :rtype: object
+        """
         self.inspection_vacancy(prof, vacancies)
         self.checked_salary()
         self.salary_lvl_by_city, list_del_town = self.get_top_aver_salary(self.salary_lvl_by_city)
@@ -151,6 +234,11 @@ class ParseData:
                self.salary_lvl_by_city, self.vacancy_rate_by_city
 
     def checked_salary(self):
+        """
+        Проверка зарплат
+
+        :rtype: object
+        """
         if self.salary_lvl_by_year_for_prof.salary_dict == {}:
             self.salary_lvl_by_year_for_prof.salary_dict = {x: [0] for x in self.salary_lvl_by_year.salary_dict.keys()}
         elif self.salary_lvl_by_year_for_prof.salary_dict != {} and len(
@@ -169,6 +257,13 @@ class ParseData:
                     self.count_vac_by_year_for_prof.count_dict[key] = 0
 
     def inspection_vacancy(self, prof, vacancies):
+        """
+        Проверка вакансий
+
+        :type vacancies: object
+        :type prof: object
+        :rtype: object
+        """
         for vacancy in vacancies:
             vacancy_salary = (vacancy.salary_from + vacancy.salary_to) / 2 * currency_to_rub[vacancy.salary_currency]
             self.salary_lvl_by_year.add_salary(vacancy.published_at, vacancy_salary)
@@ -181,6 +276,12 @@ class ParseData:
 
     @staticmethod
     def get_top_aver_salary(list_all_salary):
+        """
+        Динамика уровня зарплат по годам
+
+        :type list_all_salary: object
+        :rtype: object
+        """
         dic_average = []
         dic_town_count = {}
         for i in range(len(list_all_salary.salary_dict)):
@@ -213,6 +314,13 @@ class ParseData:
 
     @staticmethod
     def get_top_rate_by_city(vacancy_rate_by_city):
+        """
+        Динамика уровня зарплат по годам для выбранной профессии
+        Поиск повышенной ставки в городе
+
+        :type vacancy_rate_by_city: object
+        :rtype: object
+        """
         s = vacancy_rate_by_city.length
         list_del_town = []
         for i in reversed(range(len(list_del_town))):
@@ -232,7 +340,16 @@ class ParseData:
 
 
 class Report:
+    """
+    Класс Report, который при создании объекта принимает набор характеристик для оформления отчета,
+    а также метод generate_excel, который принимает список словарей для печати и формирует excel-файл с данными.
+    Для формирования файла использовала библиотеку openpyxl.
+    """
     def __init__(self):
+        """
+        Создание шапки таблицы
+        :rtype: object
+        """
         self.wb = Workbook()
         self.sheet1 = self.wb.active
         self.sheet1.title = 'Статистика по годам'
@@ -249,6 +366,13 @@ class Report:
         self.ax4.set_title('Доля вакансий по городам')
 
     def generate_excel(self, data, prof):
+        """
+        Принимает список словарей для печати и формирует excel-файл с данными
+
+        :type prof: object
+        :type data: object
+        :rtype: object
+        """
         salary_lvl_by_year = data[0]
         count_vac_by_year = data[1]
         salary_lvl_by_year_for_prof = data[2]
@@ -288,11 +412,22 @@ class Report:
 
     @staticmethod
     def set_border(ws, side):
+        """
+        Отрисовка границы таблицы
+
+        :rtype: object
+        """
         for cell in ws._cells.values():
             cell.border = Border(top=side, bottom=side, left=side, right=side)
 
     @staticmethod
     def column_width(ws):
+        """
+        Рассчет длины колонок
+
+        :type ws: object
+        :rtype: object
+        """
         dims = {}
         for row in ws.rows:
             for cell in row:
@@ -302,6 +437,11 @@ class Report:
             ws.column_dimensions[col].width = value + 2
 
     def generate_image(self, data, prof):
+        """
+        Построение графиков по данным статистики с помощью библиотеки matplotlib
+
+        :rtype: object
+        """
         count_vac_by_year, count_vac_by_year_for_prof, salary_lvl_by_city, salary_lvl_by_year, salary_lvl_by_year_for_prof, vacancy_rate_by_city, width_12, x_list1_1, x_list1_2, x_nums_1 = self.calculation(
             data)
 
@@ -351,6 +491,12 @@ class Report:
         plt.savefig('graph.png')
 
     def search_hyphens(self, salary_lvl_by_city):
+        """
+        Поиск дефисов и перенос знаков в таблице
+
+        :type salary_lvl_by_city: object
+        :rtype: object
+        """
         list_names = {}
         for key, value in salary_lvl_by_city.items():
             if ' ' in key:
@@ -363,6 +509,11 @@ class Report:
         return list_names
 
     def calculation(self, data):
+        """
+
+        :type data: object
+        :rtype: object
+        """
         salary_lvl_by_year = data[0]
         count_vac_by_year = data[1]
         salary_lvl_by_year_for_prof = data[2]
@@ -377,6 +528,12 @@ class Report:
 
 
 def output(data_vacancies, profession_name):
+    """
+
+    :type profession_name: object
+    :type data_vacancies: object
+    :rtype: object
+    """
     all_data_vacancies = []
     for data_vacancy in data_vacancies:
         data_vacancy = Vacancy(dict(zip(column_names, data_vacancy)))
